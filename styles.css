@@ -741,43 +741,13 @@ a {
   transform: translateX(-50%) translateY(0);
 }
 
-/* Theme toggle */
-.theme-toggle {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  z-index: 10000;
-  width: 54px;
-  height: 54px;
-  border-radius: 18px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--card-border);
-  box-shadow: var(--shadow);
-  color: var(--text);
-  backdrop-filter: blur(12px);
-  transition: transform var(--transition), background var(--transition), border-color var(--transition);
+/* Theme toggle (in menu) */
+.app-menu #theme-toggle {
+  min-height: 46px;
 }
 
-.theme-toggle:hover {
-  transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(108, 140, 255, 0.45);
-}
-
-.theme-toggle:active {
-  transform: translateY(0);
-}
-
-.theme-toggle:focus-visible {
-  outline: 2px solid rgba(108, 140, 255, 0.75);
-  outline-offset: 2px;
-}
-
-.theme-toggle-icon {
-  font-size: 20px;
+.app-menu #theme-toggle > span {
+  font-size: 18px;
   line-height: 1;
   transform: translateY(1px);
   user-select: none;
@@ -851,4 +821,3 @@ a {
     width: min(100%, 290px);
   }
 }
-
