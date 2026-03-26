@@ -1,0 +1,2093 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Список дел + Помодоро</title>
+
+    <style>
+      /* =========================================================
+         БАЗОВЫЕ ПЕРЕМЕННЫЕ ТЕМЫ
+         Все основные цвета и размеры можно менять здесь.
+         ========================================================= */
+      :root {
+        --bg: #0b1020;
+        --bg-soft: #121a31;
+        --card: rgba(18, 26, 49, 0.82);
+        --card-border: rgba(255, 255, 255, 0.08);
+        --text: #f3f6ff;
+        --text-soft: #b7c2e2;
+        --text-muted: #8d97b8;
+        --line: rgba(255, 255, 255, 0.08);
+
+        --accent: #6c8cff;
+        --accent-2: #8b5cf6;
+        --accent-work: #ff6b6b;
+        --accent-short: #4ade80;
+        --accent-long: #38bdf8;
+
+        --success: #4ade80;
+        --warning: #f59e0b;
+        --danger: #fb7185;
+
+        --shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+        --radius-xl: 24px;
+        --radius-lg: 18px;
+        --radius-md: 14px;
+        --radius-sm: 10px;
+
+        --container: 1240px;
+        --transition: 0.22s ease;
+
+        /* =========================================================
+           ПАРАМЕТРЫ ТЕМЫ (для тёмной темы по умолчанию)
+           Используются ниже в градиентах таймера и toast.
+           ========================================================= */
+        --ring-center: rgba(255, 255, 255, 0.05);
+        --ring-outer: rgba(255, 255, 255, 0.08);
+        --ring-border: rgba(255, 255, 255, 0.06);
+        --ring-shadow: rgba(0, 0, 0, 0.25);
+
+        --timer-core-radial-1: rgba(255, 255, 255, 0.08);
+        --timer-core-radial-2: rgba(255, 255, 255, 0.02);
+        --timer-core-bg: rgba(10, 14, 28, 0.9);
+        --timer-core-border: rgba(255, 255, 255, 0.06);
+
+        --toast-bg: rgba(10, 14, 28, 0.94);
+        --toast-border: rgba(255, 255, 255, 0.08);
+        --toast-text: #ffffff;
+      }
+
+      /* =========================================================
+         СВЕТЛАЯ ТЕМА
+         Переключение делается через атрибут data-theme на <html>.
+         ========================================================= */
+      html[data-theme="light"] {
+        --bg: #f6f7ff;
+        --bg-soft: #ffffff;
+        --card: rgba(255, 255, 255, 0.86);
+        --card-border: rgba(2, 6, 23, 0.09);
+        --text: #0b1020;
+        --text-soft: #334155;
+        --text-muted: #475569;
+        --line: rgba(2, 6, 23, 0.12);
+
+        --shadow: 0 18px 50px rgba(2, 6, 23, 0.14);
+
+        --ring-center: rgba(2, 6, 23, 0.05);
+        --ring-outer: rgba(2, 6, 23, 0.08);
+        --ring-border: rgba(2, 6, 23, 0.07);
+        --ring-shadow: rgba(2, 6, 23, 0.12);
+
+        --timer-core-radial-1: rgba(2, 6, 23, 0.06);
+        --timer-core-radial-2: rgba(2, 6, 23, 0.02);
+        --timer-core-bg: rgba(255, 255, 255, 0.94);
+        --timer-core-border: rgba(2, 6, 23, 0.08);
+
+        --toast-bg: rgba(255, 255, 255, 0.94);
+        --toast-border: rgba(2, 6, 23, 0.10);
+        --toast-text: #0b1020;
+      }
+
+      /* Фон и градиенты под светлую тему */
+      html[data-theme="light"] body {
+        background:
+          radial-gradient(
+            circle at top left,
+            rgba(108, 140, 255, 0.15),
+            transparent 28%
+          ),
+          radial-gradient(
+            circle at top right,
+            rgba(139, 92, 246, 0.13),
+            transparent 30%
+          ),
+          radial-gradient(
+            circle at bottom center,
+            rgba(56, 189, 248, 0.10),
+            transparent 25%
+          ),
+          var(--bg);
+        color: var(--text);
+      }
+
+      /* =========================================================
+         СБРОС И БАЗОВЫЕ СТИЛИ
+         ========================================================= */
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+        background:
+          radial-gradient(circle at top left, rgba(108, 140, 255, 0.18), transparent 28%),
+          radial-gradient(circle at top right, rgba(139, 92, 246, 0.16), transparent 30%),
+          radial-gradient(circle at bottom center, rgba(56, 189, 248, 0.12), transparent 25%),
+          var(--bg);
+        color: var(--text);
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          Arial,
+          sans-serif;
+        line-height: 1.45;
+        overflow-x: hidden;
+      }
+
+      body.flash-finish {
+        animation: flashFinish 1.2s ease;
+      }
+
+      @keyframes flashFinish {
+        0% {
+          background-color: rgba(255, 255, 255, 0);
+        }
+        25% {
+          background-color: rgba(255, 255, 255, 0.05);
+        }
+        50% {
+          background-color: rgba(255, 255, 255, 0);
+        }
+        75% {
+          background-color: rgba(255, 255, 255, 0.05);
+        }
+        100% {
+          background-color: rgba(255, 255, 255, 0);
+        }
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        border: 0;
+        cursor: pointer;
+      }
+
+      input {
+        outline: none;
+      }
+
+      .app-shell {
+        width: min(var(--container), calc(100% - 24px));
+        margin: 0 auto;
+        padding: 24px 0 40px;
+      }
+
+      /* =========================================================
+         ШАПКА
+         ========================================================= */
+      .app-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 20px;
+        padding: 22px 22px 0;
+      }
+
+      .app-title-wrap {
+        display: grid;
+        gap: 8px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        width: fit-content;
+        padding: 8px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--card-border);
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-soft);
+        font-size: 0.9rem;
+        backdrop-filter: blur(10px);
+      }
+
+      .app-title {
+        margin: 0;
+        font-size: clamp(1.8rem, 3vw, 2.8rem);
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+      }
+
+      .app-subtitle {
+        margin: 0;
+        color: var(--text-soft);
+        max-width: 780px;
+        font-size: 1rem;
+      }
+
+      .header-badge {
+        padding: 12px 16px;
+        border-radius: var(--radius-lg);
+        background: linear-gradient(135deg, rgba(108, 140, 255, 0.18), rgba(139, 92, 246, 0.12));
+        border: 1px solid var(--card-border);
+        color: var(--text-soft);
+        white-space: nowrap;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(12px);
+      }
+
+      .header-badge strong {
+        color: var(--text);
+      }
+
+      /* =========================================================
+         ОСНОВНАЯ СЕТКА
+         ========================================================= */
+      .app-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.95fr;
+        gap: 20px;
+        align-items: start;
+        padding: 0 22px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(18px);
+        overflow: hidden;
+      }
+
+      .card-inner {
+        padding: 22px;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+
+      .section-head h2 {
+        margin: 0;
+        font-size: 1.2rem;
+        letter-spacing: -0.02em;
+      }
+
+      .section-head p {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 0.92rem;
+      }
+
+      /* =========================================================
+         ФОРМА ДОБАВЛЕНИЯ ЗАДАЧ
+         ========================================================= */
+      .task-form {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+
+      .input,
+      .number-input {
+        width: 100%;
+        min-height: 48px;
+        padding: 0 14px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text);
+        transition: border-color var(--transition), background var(--transition), transform var(--transition);
+      }
+
+      .input::placeholder {
+        color: var(--text-muted);
+      }
+
+      .input:focus,
+      .number-input:focus {
+        border-color: rgba(108, 140, 255, 0.75);
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateY(-1px);
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 46px;
+        padding: 0 16px;
+        border-radius: var(--radius-md);
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--line);
+        transition:
+          transform var(--transition),
+          background var(--transition),
+          border-color var(--transition),
+          opacity var(--transition);
+        user-select: none;
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+      }
+
+      .btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        border-color: transparent;
+        box-shadow: 0 12px 24px rgba(108, 140, 255, 0.24);
+      }
+
+      .btn-primary:hover {
+        background: linear-gradient(135deg, #7a98ff, #9970ff);
+      }
+
+      .btn-success {
+        background: linear-gradient(135deg, rgba(74, 222, 128, 0.24), rgba(74, 222, 128, 0.1));
+        border-color: rgba(74, 222, 128, 0.32);
+      }
+
+      .btn-danger {
+        background: linear-gradient(135deg, rgba(251, 113, 133, 0.22), rgba(251, 113, 133, 0.08));
+        border-color: rgba(251, 113, 133, 0.28);
+      }
+
+      .btn-ghost {
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .btn-sm {
+        min-height: 38px;
+        padding: 0 12px;
+        border-radius: 12px;
+        font-size: 0.92rem;
+      }
+
+      /* =========================================================
+         ФИЛЬТРЫ И СТАТИСТИКА
+         ========================================================= */
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .filter-btn.is-active {
+        background: rgba(108, 140, 255, 0.18);
+        border-color: rgba(108, 140, 255, 0.45);
+        color: #ffffff;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+
+      .stat-card {
+        padding: 14px;
+        border-radius: var(--radius-lg);
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--line);
+        min-height: 92px;
+        display: grid;
+        align-content: space-between;
+        gap: 8px;
+      }
+
+      .stat-label {
+        color: var(--text-muted);
+        font-size: 0.88rem;
+      }
+
+      .stat-value {
+        font-size: clamp(1.3rem, 2vw, 1.8rem);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+
+      /* =========================================================
+         СПИСОК ЗАДАЧ
+         ========================================================= */
+      .task-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 12px;
+      }
+
+      .task-item {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 12px;
+        align-items: flex-start;
+        padding: 14px;
+        border-radius: var(--radius-lg);
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--line);
+        transition:
+          border-color var(--transition),
+          transform var(--transition),
+          background var(--transition);
+      }
+
+      .task-item:hover {
+        transform: translateY(-1px);
+        border-color: rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.055);
+      }
+
+      .task-item.is-selected {
+        border-color: rgba(108, 140, 255, 0.58);
+        box-shadow: inset 0 0 0 1px rgba(108, 140, 255, 0.18);
+        background: linear-gradient(135deg, rgba(108, 140, 255, 0.11), rgba(255, 255, 255, 0.04));
+      }
+
+      .task-item.is-completed .task-title {
+        text-decoration: line-through;
+        opacity: 0.68;
+      }
+
+      .task-item.is-completed .task-meta {
+        color: var(--text-muted);
+      }
+
+      .task-checkbox {
+        width: 22px;
+        height: 22px;
+        margin-top: 3px;
+        accent-color: var(--success);
+        cursor: pointer;
+      }
+
+      .task-content {
+        display: grid;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .task-title-button {
+        display: grid;
+        gap: 6px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .task-title {
+        font-size: 1rem;
+        font-weight: 600;
+        word-break: break-word;
+        letter-spacing: -0.01em;
+      }
+
+      .task-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        color: var(--text-soft);
+        font-size: 0.88rem;
+      }
+
+      .task-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        width: fit-content;
+        padding: 7px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--line);
+        color: var(--text-soft);
+      }
+
+      .task-pill.focus {
+        background: rgba(108, 140, 255, 0.16);
+        border-color: rgba(108, 140, 255, 0.34);
+        color: #ffffff;
+      }
+
+      .task-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+
+      .task-edit-wrap {
+        display: grid;
+        gap: 10px;
+      }
+
+      .task-edit-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .empty-state {
+        padding: 24px 16px;
+        border: 1px dashed var(--line);
+        border-radius: var(--radius-lg);
+        text-align: center;
+        color: var(--text-soft);
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      /* =========================================================
+         БЛОК ТАЙМЕРА
+         ========================================================= */
+      .timer-card .card-inner {
+        display: grid;
+        gap: 20px;
+      }
+
+      .mode-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .mode-btn.is-active {
+        color: #ffffff;
+        border-color: transparent;
+      }
+
+      .mode-btn[data-mode="work"].is-active {
+        background: linear-gradient(135deg, rgba(255, 107, 107, 0.32), rgba(255, 107, 107, 0.18));
+        box-shadow: 0 10px 20px rgba(255, 107, 107, 0.16);
+      }
+
+      .mode-btn[data-mode="shortBreak"].is-active {
+        background: linear-gradient(135deg, rgba(74, 222, 128, 0.3), rgba(74, 222, 128, 0.16));
+        box-shadow: 0 10px 20px rgba(74, 222, 128, 0.14);
+      }
+
+      .mode-btn[data-mode="longBreak"].is-active {
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.3), rgba(56, 189, 248, 0.16));
+        box-shadow: 0 10px 20px rgba(56, 189, 248, 0.14);
+      }
+
+      .timer-center {
+        display: grid;
+        place-items: center;
+        gap: 16px;
+        padding: 4px 0;
+      }
+
+      .timer-ring {
+        --progress: 0;
+        --ring-accent: var(--accent);
+        width: min(100%, 340px);
+        aspect-ratio: 1;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        padding: 16px;
+        background:
+          radial-gradient(circle at center, var(--ring-center) 0 55%, transparent 55%),
+          conic-gradient(var(--ring-accent) calc(var(--progress) * 1%), var(--ring-outer) 0);
+        box-shadow:
+          inset 0 0 0 1px var(--ring-border),
+          0 25px 50px var(--ring-shadow);
+        transition: background 0.25s ease;
+      }
+
+      .timer-ring[data-mode="work"] {
+        --ring-accent: var(--accent-work);
+      }
+
+      .timer-ring[data-mode="shortBreak"] {
+        --ring-accent: var(--accent-short);
+      }
+
+      .timer-ring[data-mode="longBreak"] {
+        --ring-accent: var(--accent-long);
+      }
+
+      .timer-core {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        padding: 24px;
+        background:
+          radial-gradient(circle at top, var(--timer-core-radial-1), var(--timer-core-radial-2)),
+          var(--timer-core-bg);
+        border: 1px solid var(--timer-core-border);
+      }
+
+      .timer-mode-label {
+        color: var(--text-soft);
+        font-size: 0.95rem;
+        margin-bottom: 8px;
+      }
+
+      .timer-display {
+        font-size: clamp(3rem, 8vw, 5rem);
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -0.06em;
+        margin: 0;
+      }
+
+      .timer-status {
+        margin-top: 10px;
+        color: var(--text-soft);
+        font-size: 0.96rem;
+        min-height: 1.5em;
+      }
+
+      .focus-box {
+        width: 100%;
+        padding: 14px;
+        border-radius: var(--radius-lg);
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--line);
+        display: grid;
+        gap: 8px;
+      }
+
+      .focus-title {
+        font-size: 0.88rem;
+        color: var(--text-muted);
+      }
+
+      .focus-task-name {
+        font-weight: 600;
+        word-break: break-word;
+      }
+
+      .focus-meta {
+        color: var(--text-soft);
+        font-size: 0.9rem;
+      }
+
+      .timer-controls {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .timer-stats {
+        margin-bottom: 0;
+      }
+
+      .timer-note {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 0.92rem;
+      }
+
+      /* =========================================================
+         НАСТРОЙКИ
+         ========================================================= */
+      .settings-wrap {
+        padding-top: 4px;
+        border-top: 1px solid var(--line);
+      }
+
+      .settings-title {
+        margin: 0 0 12px;
+        font-size: 1rem;
+        letter-spacing: -0.02em;
+      }
+
+      .settings-form {
+        display: grid;
+        gap: 12px;
+      }
+
+      .settings-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .field {
+        display: grid;
+        gap: 8px;
+      }
+
+      .field label {
+        color: var(--text-soft);
+        font-size: 0.9rem;
+      }
+
+      .number-input {
+        padding-right: 12px;
+      }
+
+      .settings-hint {
+        margin: 12px 0 0;
+        color: var(--text-muted);
+        font-size: 0.88rem;
+      }
+
+      /* =========================================================
+         TOAST-УВЕДОМЛЕНИЕ
+         ========================================================= */
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 20px;
+        transform: translateX(-50%) translateY(16px);
+        width: min(680px, calc(100% - 24px));
+        padding: 14px 16px;
+        border-radius: 16px;
+        background: var(--toast-bg);
+        border: 1px solid var(--toast-border);
+        color: var(--toast-text);
+        box-shadow: var(--shadow);
+        opacity: 0;
+        pointer-events: none;
+        transition:
+          opacity 0.25s ease,
+          transform 0.25s ease;
+        z-index: 9999;
+        text-align: center;
+        backdrop-filter: blur(16px);
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+
+      /* =========================================================
+         КНОПКА ТЕМЫ (в правом нижнем углу)
+         ========================================================= */
+      .theme-toggle {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        z-index: 10000;
+
+        width: 54px;
+        height: 54px;
+        border-radius: 18px;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--card-border);
+        box-shadow: var(--shadow);
+        color: var(--text);
+
+        backdrop-filter: blur(12px);
+
+        transition: transform var(--transition), background var(--transition), border-color var(--transition);
+      }
+
+      .theme-toggle:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.10);
+        border-color: rgba(108, 140, 255, 0.45);
+      }
+
+      .theme-toggle:active {
+        transform: translateY(0);
+      }
+
+      .theme-toggle:focus-visible {
+        outline: 2px solid rgba(108, 140, 255, 0.75);
+        outline-offset: 2px;
+      }
+
+      .theme-toggle-icon {
+        font-size: 20px;
+        line-height: 1;
+        transform: translateY(1px);
+        user-select: none;
+      }
+
+      /* =========================================================
+         ПОДВАЛ
+         ========================================================= */
+      .app-footer {
+        margin-top: 14px;
+        padding: 0 22px;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
+
+      /* =========================================================
+         АДАПТАЦИЯ ПОД ПЛАНШЕТЫ И МОБИЛЬНЫЕ
+         ========================================================= */
+      @media (max-width: 980px) {
+        .app-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .header-badge {
+          white-space: normal;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .app-shell {
+          width: min(100% - 16px, var(--container));
+          padding: 16px 0 28px;
+        }
+
+        .app-header,
+        .app-grid,
+        .app-footer {
+          padding-left: 10px;
+          padding-right: 10px;
+        }
+
+        .app-header {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .card-inner {
+          padding: 16px;
+        }
+
+        .task-form {
+          grid-template-columns: 1fr;
+        }
+
+        .stats-grid,
+        .settings-grid,
+        .timer-controls {
+          grid-template-columns: 1fr;
+        }
+
+        .task-item {
+          grid-template-columns: auto 1fr;
+        }
+
+        .task-actions {
+          grid-column: 1 / -1;
+          justify-content: flex-start;
+        }
+
+        .timer-ring {
+          width: min(100%, 290px);
+        }
+
+        .timer-display {
+          font-size: clamp(2.6rem, 14vw, 4.2rem);
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app-shell">
+      <header class="app-header">
+        <div class="app-title-wrap">
+          <div class="eyebrow">⏱️ Локально работает в браузере • Данные сохраняются автоматически</div>
+          <h1 class="app-title">Список дел + таймер Помодоро</h1>
+          <p class="app-subtitle">
+            Одностраничное приложение без библиотек: задачи, фильтры, выбор фокус-задачи, таймер работы и перерывов,
+            сохранение в localStorage и адаптация под мобильный экран.
+          </p>
+        </div>
+
+        <div class="header-badge">
+          Привязка к задаче: <strong id="header-selected-task">не выбрана</strong>
+        </div>
+      </header>
+
+      <main class="app-grid">
+        <!-- =====================================================
+             ЛЕВАЯ КОЛОНКА: СПИСОК ЗАДАЧ
+             ===================================================== -->
+        <section class="card" aria-labelledby="tasks-title">
+          <div class="card-inner">
+            <div class="section-head">
+              <div>
+                <h2 id="tasks-title">Задачи</h2>
+                <p>Добавляй, редактируй, завершай и выбирай текущий фокус.</p>
+              </div>
+            </div>
+
+            <form id="task-form" class="task-form" autocomplete="off">
+              <input
+                id="task-input"
+                class="input"
+                type="text"
+                maxlength="140"
+                placeholder="Например: Доделать лендинг, написать 3 письма, разобрать макет"
+                aria-label="Новая задача"
+              />
+              <button type="submit" class="btn btn-primary">Добавить задачу</button>
+            </form>
+
+            <div class="filters" role="tablist" aria-label="Фильтр списка задач">
+              <button class="btn btn-sm filter-btn" type="button" data-filter="all">Все</button>
+              <button class="btn btn-sm filter-btn" type="button" data-filter="active">Активные</button>
+              <button class="btn btn-sm filter-btn" type="button" data-filter="completed">Выполненные</button>
+            </div>
+
+            <div class="stats-grid" aria-label="Статистика задач">
+              <article class="stat-card">
+                <div class="stat-label">Всего задач</div>
+                <div class="stat-value" id="stat-total">0</div>
+              </article>
+
+              <article class="stat-card">
+                <div class="stat-label">Активных</div>
+                <div class="stat-value" id="stat-active">0</div>
+              </article>
+
+              <article class="stat-card">
+                <div class="stat-label">Выполненных</div>
+                <div class="stat-value" id="stat-completed">0</div>
+              </article>
+            </div>
+
+            <ul id="task-list" class="task-list" aria-live="polite"></ul>
+          </div>
+        </section>
+
+        <!-- =====================================================
+             ПРАВАЯ КОЛОНКА: ТАЙМЕР ПОМОДОРО
+             ===================================================== -->
+        <section class="card timer-card" aria-labelledby="timer-title">
+          <div class="card-inner">
+            <div class="section-head">
+              <div>
+                <h2 id="timer-title">Таймер Помодоро</h2>
+                <p>Работа, короткий перерыв, длинный перерыв — всё в одном блоке.</p>
+              </div>
+            </div>
+
+            <div class="mode-tabs" role="tablist" aria-label="Режимы таймера">
+              <button class="btn btn-sm mode-btn" type="button" data-mode="work">Работа</button>
+              <button class="btn btn-sm mode-btn" type="button" data-mode="shortBreak">Короткий перерыв</button>
+              <button class="btn btn-sm mode-btn" type="button" data-mode="longBreak">Длинный перерыв</button>
+            </div>
+
+            <div class="timer-center">
+              <div id="timer-ring" class="timer-ring" data-mode="work" style="--progress: 0">
+                <div class="timer-core">
+                  <div class="timer-mode-label" id="timer-mode-label">Режим: Работа</div>
+                  <div class="timer-display" id="timer-display">25:00</div>
+                  <div class="timer-status" id="timer-status">Таймер готов к запуску.</div>
+                </div>
+              </div>
+
+              <div class="focus-box">
+                <div class="focus-title">Текущая задача для фокуса</div>
+                <div class="focus-task-name" id="focus-task-name">Не выбрана</div>
+                <div class="focus-meta" id="focus-task-meta">
+                  Таймер можно использовать и без привязки, но лучше выбрать задачу для учёта помидоров.
+                </div>
+              </div>
+            </div>
+
+            <div class="timer-controls">
+              <button id="start-btn" class="btn btn-primary" type="button">Старт</button>
+              <button id="pause-btn" class="btn btn-ghost" type="button">Пауза</button>
+              <button id="reset-btn" class="btn btn-ghost" type="button">Сброс</button>
+            </div>
+
+            <div class="stats-grid timer-stats">
+              <article class="stat-card">
+                <div class="stat-label">Завершено помидоров</div>
+                <div class="stat-value" id="pomodoro-total">0</div>
+              </article>
+
+              <article class="stat-card">
+                <div class="stat-label">У выбранной задачи</div>
+                <div class="stat-value" id="pomodoro-selected-task">0</div>
+              </article>
+
+              <article class="stat-card">
+                <div class="stat-label">Следующий длинный перерыв</div>
+                <div class="stat-value" id="long-break-counter">через 4</div>
+              </article>
+            </div>
+
+            <p class="timer-note" id="timer-note">
+              После завершения таймера приложение покажет визуальный сигнал и подаст звуковой сигнал.
+            </p>
+
+            <div class="settings-wrap">
+              <h3 class="settings-title">Настройки таймера</h3>
+
+              <form id="settings-form" class="settings-form" autocomplete="off">
+                <div class="settings-grid">
+                  <div class="field">
+                    <label for="work-duration">Работа (мин)</label>
+                    <input id="work-duration" class="number-input" type="number" min="1" max="180" step="1" />
+                  </div>
+
+                  <div class="field">
+                    <label for="short-break-duration">Короткий перерыв (мин)</label>
+                    <input id="short-break-duration" class="number-input" type="number" min="1" max="60" step="1" />
+                  </div>
+
+                  <div class="field">
+                    <label for="long-break-duration">Длинный перерыв (мин)</label>
+                    <input id="long-break-duration" class="number-input" type="number" min="1" max="120" step="1" />
+                  </div>
+
+                  <div class="field">
+                    <label for="long-break-interval">Длинный перерыв каждые N помидоров</label>
+                    <input id="long-break-interval" class="number-input" type="number" min="1" max="12" step="1" />
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Сохранить настройки</button>
+              </form>
+
+              <p class="settings-hint">
+                Новые значения сохраняются в браузере. Если таймер сейчас не запущен и стоит на начальном значении,
+                длительность режима обновится сразу. Если таймер был поставлен на паузу в середине сессии — оставшееся
+                время сохранится, пока ты не нажмёшь «Сброс».
+              </p>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="app-footer">
+        Совет: выбери задачу и запускай «Работу» — тогда каждый завершённый помидор будет привязан именно к ней.
+      </footer>
+    </div>
+
+    <!-- Кнопка переключения темы (правый нижний угол) -->
+    <button
+      id="theme-toggle"
+      class="theme-toggle"
+      type="button"
+      aria-label="Переключить тему"
+      aria-pressed="false"
+      title="Переключить тему"
+    >
+      <span id="theme-toggle-icon" class="theme-toggle-icon" aria-hidden="true">🌙</span>
+    </button>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script>
+      (() => {
+        "use strict";
+
+        /* =======================================================
+           КОНСТАНТЫ ПРИЛОЖЕНИЯ
+           Здесь задаются ключи localStorage, названия режимов
+           и базовое состояние приложения.
+           ======================================================= */
+        const STORAGE_KEY = "single-file-todo-pomodoro-app-v1";
+
+        const THEME_STORAGE_KEY = "single-file-todo-pomodoro-app-v1-theme"; // <- отдельный ключ для темы
+
+        const MODE_LABELS = {
+          work: "Работа",
+          shortBreak: "Короткий перерыв",
+          longBreak: "Длинный перерыв"
+        };
+
+        const FILTER_LABELS = {
+          all: "Все",
+          active: "Активные",
+          completed: "Выполненные"
+        };
+
+        function createDefaultState() {
+          return {
+            tasks: [],
+            filter: "all",
+            selectedTaskId: null,
+            pomodoroCount: 0,
+            settings: {
+              work: 25,
+              shortBreak: 5,
+              longBreak: 15,
+              longBreakInterval: 4
+            },
+            timer: {
+              mode: "work",
+              remaining: 25 * 60,
+              isRunning: false,
+              endTimestamp: null,
+              cycleWorkSessionsCompleted: 0
+            }
+          };
+        }
+
+        /* =======================================================
+           ГЛОБАЛЬНОЕ СОСТОЯНИЕ И СЛУЖЕБНЫЕ ПЕРЕМЕННЫЕ
+           ======================================================= */
+        let state = loadState();
+        let timerIntervalId = null;
+        let editingTaskId = null;
+        let toastTimeoutId = null;
+        let titleFlashIntervalId = null;
+        let originalDocumentTitle = document.title;
+
+        /* =======================================================
+           КЭШ ЭЛЕМЕНТОВ DOM
+           Чтобы не искать их каждый раз заново.
+           ======================================================= */
+        const elements = {
+          taskForm: document.getElementById("task-form"),
+          taskInput: document.getElementById("task-input"),
+          taskList: document.getElementById("task-list"),
+          filterButtons: Array.from(document.querySelectorAll(".filter-btn")),
+          modeButtons: Array.from(document.querySelectorAll(".mode-btn")),
+
+          statTotal: document.getElementById("stat-total"),
+          statActive: document.getElementById("stat-active"),
+          statCompleted: document.getElementById("stat-completed"),
+
+          headerSelectedTask: document.getElementById("header-selected-task"),
+
+          timerRing: document.getElementById("timer-ring"),
+          timerModeLabel: document.getElementById("timer-mode-label"),
+          timerDisplay: document.getElementById("timer-display"),
+          timerStatus: document.getElementById("timer-status"),
+          timerNote: document.getElementById("timer-note"),
+
+          focusTaskName: document.getElementById("focus-task-name"),
+          focusTaskMeta: document.getElementById("focus-task-meta"),
+
+          startButton: document.getElementById("start-btn"),
+          pauseButton: document.getElementById("pause-btn"),
+          resetButton: document.getElementById("reset-btn"),
+
+          pomodoroTotal: document.getElementById("pomodoro-total"),
+          pomodoroSelectedTask: document.getElementById("pomodoro-selected-task"),
+          longBreakCounter: document.getElementById("long-break-counter"),
+
+          settingsForm: document.getElementById("settings-form"),
+          workDurationInput: document.getElementById("work-duration"),
+          shortBreakDurationInput: document.getElementById("short-break-duration"),
+          longBreakDurationInput: document.getElementById("long-break-duration"),
+          longBreakIntervalInput: document.getElementById("long-break-interval"),
+
+          toast: document.getElementById("toast"),
+
+          themeToggleButton: document.getElementById("theme-toggle"),
+          themeToggleIcon: document.getElementById("theme-toggle-icon")
+        };
+
+        /* =======================================================
+           ТЕМА: ИНИЦИАЛИЗАЦИЯ + ПЕРЕКЛЮЧЕНИЕ
+           ======================================================= */
+
+        function loadThemeFromStorage() {
+          try {
+            const stored = localStorage.getItem(THEME_STORAGE_KEY);
+            if (stored === "light" || stored === "dark") return stored;
+          } catch (error) {
+            console.warn("Не удалось прочитать тему из localStorage:", error);
+          }
+          return null;
+        }
+
+        function getDefaultTheme() {
+          // Если тема не сохранена — пробуем подстроиться под системную.
+          // Если matchMedia недоступен — берём тёмную как дефолт.
+          if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
+            return "light";
+          }
+          return "dark";
+        }
+
+        function applyTheme(theme) {
+          // Ставим атрибут на <html>, чтобы все CSS-переменные темы работали сразу.
+          document.documentElement.dataset.theme = theme;
+
+          const isLight = theme === "light";
+          if (elements.themeToggleButton) {
+            elements.themeToggleButton.setAttribute("aria-pressed", String(isLight));
+            elements.themeToggleButton.title = isLight ? "Включить тёмную тему" : "Включить светлую тему";
+          }
+
+          if (elements.themeToggleIcon) {
+            // Иконка меняется вместе с темой.
+            elements.themeToggleIcon.textContent = isLight ? "☀️" : "🌙";
+          }
+        }
+
+        function saveThemeToStorage(theme) {
+          // Сохраняем выбранную тему так, чтобы она не сбрасывалась после перезагрузки.
+          try {
+            localStorage.setItem(THEME_STORAGE_KEY, theme);
+          } catch (error) {
+            console.warn("Не удалось сохранить тему в localStorage:", error);
+          }
+        }
+
+        function initTheme() {
+          const storedTheme = loadThemeFromStorage();
+          const theme = storedTheme || getDefaultTheme();
+          applyTheme(theme);
+        }
+
+        function toggleTheme() {
+          const current = document.documentElement.dataset.theme === "light" ? "light" : "dark";
+          const next = current === "light" ? "dark" : "light";
+          applyTheme(next);
+          saveThemeToStorage(next);
+        }
+
+        // Применяем тему до отрисовки интерфейса.
+        initTheme();
+
+        /* =======================================================
+           ИНИЦИАЛИЗАЦИЯ
+           ======================================================= */
+        init();
+
+        function init() {
+          bindEvents();
+          populateSettingsForm();
+          reconcileTimerAfterReload();
+          render();
+        }
+
+        /* =======================================================
+           ПРИВЯЗКА ОБРАБОТЧИКОВ СОБЫТИЙ
+           ======================================================= */
+        function bindEvents() {
+          elements.taskForm.addEventListener("submit", handleTaskFormSubmit);
+
+          elements.filterButtons.forEach((button) => {
+            button.addEventListener("click", () => {
+              editingTaskId = null;
+              state.filter = button.dataset.filter;
+              saveState();
+              render();
+            });
+          });
+
+          elements.modeButtons.forEach((button) => {
+            button.addEventListener("click", () => {
+              switchTimerMode(button.dataset.mode);
+            });
+          });
+
+          elements.startButton.addEventListener("click", startTimer);
+          elements.pauseButton.addEventListener("click", pauseTimer);
+          elements.resetButton.addEventListener("click", resetTimer);
+
+          elements.settingsForm.addEventListener("submit", handleSettingsSubmit);
+
+          if (elements.themeToggleButton) {
+            // Переключение темы по кнопке (правый нижний угол).
+            elements.themeToggleButton.addEventListener("click", toggleTheme);
+          }
+
+          document.addEventListener("visibilitychange", () => {
+            if (!document.hidden && !titleFlashIntervalId) {
+              updateDocumentTitle();
+            }
+          });
+
+          // Любое взаимодействие пользователя останавливает мигание title после сигнала.
+          document.addEventListener("click", stopTitleFlash, { passive: true });
+          document.addEventListener("keydown", stopTitleFlash);
+
+          window.addEventListener("beforeunload", saveState);
+        }
+
+        /* =======================================================
+           РАБОТА С LOCALSTORAGE
+           ======================================================= */
+        function loadState() {
+          const defaultState = createDefaultState();
+
+          try {
+            const rawState = localStorage.getItem(STORAGE_KEY);
+            if (!rawState) return defaultState;
+
+            const parsed = JSON.parse(rawState);
+            return normalizeState(parsed);
+          } catch (error) {
+            console.error("Не удалось прочитать состояние из localStorage:", error);
+            return defaultState;
+          }
+        }
+
+        function saveState() {
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          } catch (error) {
+            console.error("Не удалось сохранить состояние в localStorage:", error);
+          }
+        }
+
+        function normalizeState(raw) {
+          const safe = createDefaultState();
+
+          if (!raw || typeof raw !== "object") {
+            return safe;
+          }
+
+          // Нормализация задач
+          const tasks = Array.isArray(raw.tasks) ? raw.tasks : [];
+          safe.tasks = tasks
+            .map((task) => {
+              if (!task || typeof task !== "object") return null;
+
+              return {
+                id: typeof task.id === "string" && task.id ? task.id : generateId(),
+                title: typeof task.title === "string" ? task.title.trim() : "",
+                completed: Boolean(task.completed),
+                pomodorosCompleted: clampNumber(task.pomodorosCompleted, 0, 100000, 0),
+                createdAt: typeof task.createdAt === "number" ? task.createdAt : Date.now()
+              };
+            })
+            .filter((task) => task && task.title);
+
+          safe.filter = ["all", "active", "completed"].includes(raw.filter) ? raw.filter : "all";
+
+          safe.selectedTaskId =
+            typeof raw.selectedTaskId === "string" &&
+            safe.tasks.some((task) => task.id === raw.selectedTaskId)
+              ? raw.selectedTaskId
+              : null;
+
+          safe.pomodoroCount = clampNumber(raw.pomodoroCount, 0, 100000, 0);
+
+          const rawSettings = raw.settings && typeof raw.settings === "object" ? raw.settings : {};
+          safe.settings = {
+            work: clampNumber(rawSettings.work, 1, 180, 25),
+            shortBreak: clampNumber(rawSettings.shortBreak, 1, 60, 5),
+            longBreak: clampNumber(rawSettings.longBreak, 1, 120, 15),
+            longBreakInterval: clampNumber(rawSettings.longBreakInterval, 1, 12, 4)
+          };
+
+          const rawTimer = raw.timer && typeof raw.timer === "object" ? raw.timer : {};
+          const mode = ["work", "shortBreak", "longBreak"].includes(rawTimer.mode) ? rawTimer.mode : "work";
+          const modeDurationSeconds = safe.settings[mode] * 60;
+
+          safe.timer = {
+            mode,
+            remaining: clampNumber(rawTimer.remaining, 0, 24 * 60 * 60, modeDurationSeconds),
+            isRunning: Boolean(rawTimer.isRunning),
+            endTimestamp:
+              typeof rawTimer.endTimestamp === "number" && Number.isFinite(rawTimer.endTimestamp)
+                ? rawTimer.endTimestamp
+                : null,
+            cycleWorkSessionsCompleted: clampNumber(rawTimer.cycleWorkSessionsCompleted, 0, 100000, 0)
+          };
+
+          return safe;
+        }
+
+        /* =======================================================
+           ОБЩИЕ УТИЛИТЫ
+           ======================================================= */
+        function clampNumber(value, min, max, fallback) {
+          const number = Number(value);
+          if (!Number.isFinite(number)) return fallback;
+          return Math.min(max, Math.max(min, Math.round(number)));
+        }
+
+        function generateId() {
+          if (window.crypto && typeof window.crypto.randomUUID === "function") {
+            return window.crypto.randomUUID();
+          }
+          return `task-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        }
+
+        function formatTime(totalSeconds) {
+          const seconds = Math.max(0, Math.floor(totalSeconds));
+          const minutesPart = String(Math.floor(seconds / 60)).padStart(2, "0");
+          const secondsPart = String(seconds % 60).padStart(2, "0");
+          return `${minutesPart}:${secondsPart}`;
+        }
+
+        function getModeDurationInSeconds(mode) {
+          return state.settings[mode] * 60;
+        }
+
+        function getSelectedTask() {
+          return state.tasks.find((task) => task.id === state.selectedTaskId) || null;
+        }
+
+        function getFilteredTasks() {
+          switch (state.filter) {
+            case "active":
+              return state.tasks.filter((task) => !task.completed);
+            case "completed":
+              return state.tasks.filter((task) => task.completed);
+            default:
+              return state.tasks;
+          }
+        }
+
+        function showToast(message, duration = 3200) {
+          clearTimeout(toastTimeoutId);
+          elements.toast.textContent = message;
+          elements.toast.classList.add("show");
+
+          toastTimeoutId = setTimeout(() => {
+            elements.toast.classList.remove("show");
+          }, duration);
+        }
+
+        function playCompletionSignal() {
+          // Попытка мягко воспроизвести сигнал с помощью Web Audio API.
+          // Если браузер не разрешит звук — визуальный сигнал всё равно останется.
+          try {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContextClass) return;
+
+            const context = new AudioContextClass();
+            const startAt = context.currentTime;
+
+            const melody = [
+              { time: 0, frequency: 880, duration: 0.12 },
+              { time: 0.18, frequency: 988, duration: 0.12 },
+              { time: 0.36, frequency: 1318, duration: 0.18 }
+            ];
+
+            melody.forEach((note) => {
+              const oscillator = context.createOscillator();
+              const gainNode = context.createGain();
+
+              oscillator.type = "sine";
+              oscillator.frequency.setValueAtTime(note.frequency, startAt + note.time);
+
+              gainNode.gain.setValueAtTime(0.0001, startAt + note.time);
+              gainNode.gain.exponentialRampToValueAtTime(0.18, startAt + note.time + 0.02);
+              gainNode.gain.exponentialRampToValueAtTime(0.0001, startAt + note.time + note.duration);
+
+              oscillator.connect(gainNode);
+              gainNode.connect(context.destination);
+
+              oscillator.start(startAt + note.time);
+              oscillator.stop(startAt + note.time + note.duration + 0.02);
+            });
+          } catch (error) {
+            console.warn("Не удалось воспроизвести звуковой сигнал:", error);
+          }
+
+          // Вибрация для мобильных устройств, где это поддерживается.
+          if (navigator.vibrate) {
+            navigator.vibrate([160, 90, 160]);
+          }
+        }
+
+        function triggerVisualCompletionSignal() {
+          document.body.classList.remove("flash-finish");
+          // Форсируем reflow, чтобы анимация стабильно сработала повторно.
+          void document.body.offsetWidth;
+          document.body.classList.add("flash-finish");
+        }
+
+        function startTitleFlash(message = "⏰ Время вышло!") {
+          stopTitleFlash();
+
+          let visible = false;
+          let iterations = 0;
+
+          titleFlashIntervalId = setInterval(() => {
+            document.title = visible ? message : originalDocumentTitle;
+            visible = !visible;
+            iterations += 1;
+
+            // Автоматически останавливаем мигание через несколько переключений.
+            if (iterations >= 12) {
+              stopTitleFlash();
+            }
+          }, 900);
+        }
+
+        function stopTitleFlash() {
+          if (titleFlashIntervalId) {
+            clearInterval(titleFlashIntervalId);
+            titleFlashIntervalId = null;
+            updateDocumentTitle();
+          }
+        }
+
+        function updateDocumentTitle() {
+          if (titleFlashIntervalId) return;
+          document.title = `${formatTime(state.timer.remaining)} • ${MODE_LABELS[state.timer.mode]} • Список дел + Помодоро`;
+        }
+
+        /* =======================================================
+           ЗАДАЧИ: ДОБАВЛЕНИЕ, РЕДАКТИРОВАНИЕ, УДАЛЕНИЕ, ВЫБОР
+           ======================================================= */
+        function handleTaskFormSubmit(event) {
+          event.preventDefault();
+
+          const rawTitle = elements.taskInput.value.trim();
+          if (!rawTitle) {
+            showToast("Сначала введи название задачи.");
+            elements.taskInput.focus();
+            return;
+          }
+
+          const newTask = {
+            id: generateId(),
+            title: rawTitle,
+            completed: false,
+            pomodorosCompleted: 0,
+            createdAt: Date.now()
+          };
+
+          state.tasks.unshift(newTask);
+
+          // Если это первая задача — сразу делаем её выбранной.
+          if (!state.selectedTaskId) {
+            state.selectedTaskId = newTask.id;
+          }
+
+          elements.taskInput.value = "";
+          editingTaskId = null;
+
+          saveState();
+          render();
+          showToast("Задача добавлена.");
+          elements.taskInput.focus();
+        }
+
+        function toggleTaskCompletion(taskId) {
+          const task = state.tasks.find((item) => item.id === taskId);
+          if (!task) return;
+
+          task.completed = !task.completed;
+
+          saveState();
+          render();
+        }
+
+        function deleteTask(taskId) {
+          const task = state.tasks.find((item) => item.id === taskId);
+          if (!task) return;
+
+          const shouldDelete = window.confirm(`Удалить задачу:\n«${task.title}»?`);
+          if (!shouldDelete) return;
+
+          state.tasks = state.tasks.filter((item) => item.id !== taskId);
+
+          if (state.selectedTaskId === taskId) {
+            state.selectedTaskId = state.tasks.length ? state.tasks[0].id : null;
+          }
+
+          if (editingTaskId === taskId) {
+            editingTaskId = null;
+          }
+
+          saveState();
+          render();
+          showToast("Задача удалена.");
+        }
+
+        function selectTask(taskId) {
+          // Повторный клик по уже выбранной задаче снимает выбор.
+          state.selectedTaskId = state.selectedTaskId === taskId ? null : taskId;
+          saveState();
+          render();
+        }
+
+        function beginEditTask(taskId) {
+          editingTaskId = taskId;
+          render();
+
+          const input = document.querySelector(`[data-edit-input-id="${taskId}"]`);
+          if (input) {
+            input.focus();
+            input.select();
+          }
+        }
+
+        function cancelEditTask() {
+          editingTaskId = null;
+          render();
+        }
+
+        function saveEditedTask(taskId, value) {
+          const cleanValue = String(value).trim();
+
+          if (!cleanValue) {
+            showToast("Название задачи не может быть пустым.");
+            return;
+          }
+
+          const task = state.tasks.find((item) => item.id === taskId);
+          if (!task) return;
+
+          task.title = cleanValue;
+          editingTaskId = null;
+
+          saveState();
+          render();
+          showToast("Задача обновлена.");
+        }
+
+        /* =======================================================
+           ТАЙМЕР: РЕЖИМЫ, ЗАПУСК, ПАУЗА, СБРОС, ЗАВЕРШЕНИЕ
+           ======================================================= */
+        function switchTimerMode(mode) {
+          if (!MODE_LABELS[mode]) return;
+
+          stopTimerInterval();
+          state.timer.isRunning = false;
+          state.timer.endTimestamp = null;
+          state.timer.mode = mode;
+          state.timer.remaining = getModeDurationInSeconds(mode);
+
+          saveState();
+          render();
+          showToast(`Режим переключён: ${MODE_LABELS[mode]}.`);
+        }
+
+        function startTimer() {
+          if (state.timer.isRunning) return;
+
+          state.timer.isRunning = true;
+          state.timer.endTimestamp = Date.now() + state.timer.remaining * 1000;
+
+          startTimerInterval();
+          saveState();
+          render();
+        }
+
+        function pauseTimer() {
+          if (!state.timer.isRunning) return;
+
+          syncRemainingWithClock();
+          state.timer.isRunning = false;
+          state.timer.endTimestamp = null;
+
+          stopTimerInterval();
+          saveState();
+          render();
+          showToast("Таймер поставлен на паузу.");
+        }
+
+        function resetTimer() {
+          stopTimerInterval();
+          state.timer.isRunning = false;
+          state.timer.endTimestamp = null;
+          state.timer.remaining = getModeDurationInSeconds(state.timer.mode);
+
+          saveState();
+          render();
+          showToast("Таймер сброшен.");
+        }
+
+        function startTimerInterval() {
+          stopTimerInterval();
+
+          timerIntervalId = setInterval(() => {
+            syncRemainingWithClock();
+
+            if (state.timer.remaining <= 0) {
+              handleTimerCompletion();
+              return;
+            }
+
+            renderTimer();
+          }, 1000);
+        }
+
+        function stopTimerInterval() {
+          if (timerIntervalId) {
+            clearInterval(timerIntervalId);
+            timerIntervalId = null;
+          }
+        }
+
+        function syncRemainingWithClock() {
+          if (!state.timer.isRunning || !state.timer.endTimestamp) return;
+
+          const millisecondsLeft = state.timer.endTimestamp - Date.now();
+          state.timer.remaining = Math.max(0, Math.ceil(millisecondsLeft / 1000));
+        }
+
+        function handleTimerCompletion(isSilent = false) {
+          stopTimerInterval();
+
+          const finishedMode = state.timer.mode;
+
+          state.timer.isRunning = false;
+          state.timer.endTimestamp = null;
+          state.timer.remaining = 0;
+
+          let toastMessage = "";
+
+          if (finishedMode === "work") {
+            state.pomodoroCount += 1;
+            state.timer.cycleWorkSessionsCompleted += 1;
+
+            const selectedTask = getSelectedTask();
+            if (selectedTask) {
+              selectedTask.pomodorosCompleted += 1;
+            }
+
+            const shouldUseLongBreak =
+              state.timer.cycleWorkSessionsCompleted % state.settings.longBreakInterval === 0;
+
+            const nextMode = shouldUseLongBreak ? "longBreak" : "shortBreak";
+
+            state.timer.mode = nextMode;
+            state.timer.remaining = getModeDurationInSeconds(nextMode);
+
+            toastMessage = selectedTask
+              ? `Помидор завершён для задачи «${selectedTask.title}». Дальше: ${MODE_LABELS[nextMode].toLowerCase()}.`
+              : `Помидор завершён. Дальше: ${MODE_LABELS[nextMode].toLowerCase()}.`;
+          } else {
+            state.timer.mode = "work";
+            state.timer.remaining = getModeDurationInSeconds("work");
+            toastMessage = `${MODE_LABELS[finishedMode]} завершён. Можно возвращаться к работе.`;
+          }
+
+          saveState();
+          render();
+
+          if (!isSilent) {
+            playCompletionSignal();
+            triggerVisualCompletionSignal();
+            startTitleFlash("⏰ Таймер завершён!");
+          }
+
+          showToast(toastMessage, 5000);
+        }
+
+        function reconcileTimerAfterReload() {
+          // Если страница была перезагружена во время активного таймера,
+          // восстанавливаем актуальное состояние по endTimestamp.
+          if (!state.timer.isRunning || !state.timer.endTimestamp) {
+            state.timer.remaining = Math.max(0, state.timer.remaining);
+            return;
+          }
+
+          const secondsLeft = Math.ceil((state.timer.endTimestamp - Date.now()) / 1000);
+
+          if (secondsLeft <= 0) {
+            // Если таймер уже должен был завершиться, переводим его на следующий режим.
+            handleTimerCompletion(true);
+            return;
+          }
+
+          state.timer.remaining = secondsLeft;
+          startTimerInterval();
+        }
+
+        /* =======================================================
+           НАСТРОЙКИ ТАЙМЕРА
+           ======================================================= */
+        function populateSettingsForm() {
+          elements.workDurationInput.value = state.settings.work;
+          elements.shortBreakDurationInput.value = state.settings.shortBreak;
+          elements.longBreakDurationInput.value = state.settings.longBreak;
+          elements.longBreakIntervalInput.value = state.settings.longBreakInterval;
+        }
+
+        function handleSettingsSubmit(event) {
+          event.preventDefault();
+
+          const nextSettings = {
+            work: clampNumber(elements.workDurationInput.value, 1, 180, state.settings.work),
+            shortBreak: clampNumber(elements.shortBreakDurationInput.value, 1, 60, state.settings.shortBreak),
+            longBreak: clampNumber(elements.longBreakDurationInput.value, 1, 120, state.settings.longBreak),
+            longBreakInterval: clampNumber(
+              elements.longBreakIntervalInput.value,
+              1,
+              12,
+              state.settings.longBreakInterval
+            )
+          };
+
+          const oldModeDuration = getModeDurationInSeconds(state.timer.mode);
+
+          state.settings = nextSettings;
+
+          // Если таймер не идёт и находится на "чистом" стартовом значении,
+          // автоматически обновляем длительность текущего режима.
+          const newModeDuration = getModeDurationInSeconds(state.timer.mode);
+          const timerIsAtStartValue = !state.timer.isRunning && state.timer.remaining === oldModeDuration;
+
+          if (timerIsAtStartValue) {
+            state.timer.remaining = newModeDuration;
+          }
+
+          saveState();
+          render();
+          showToast("Настройки сохранены.");
+        }
+
+        /* =======================================================
+           РЕНДЕРИНГ: ОБНОВЛЕНИЕ ИНТЕРФЕЙСА
+           ======================================================= */
+        function render() {
+          renderTaskFilters();
+          renderTaskStats();
+          renderTaskList();
+          renderTimer();
+          updateDocumentTitle();
+        }
+
+        function renderTaskFilters() {
+          elements.filterButtons.forEach((button) => {
+            button.classList.toggle("is-active", button.dataset.filter === state.filter);
+            button.setAttribute(
+              "aria-selected",
+              String(button.dataset.filter === state.filter)
+            );
+          });
+        }
+
+        function renderTaskStats() {
+          const total = state.tasks.length;
+          const completed = state.tasks.filter((task) => task.completed).length;
+          const active = total - completed;
+
+          elements.statTotal.textContent = String(total);
+          elements.statActive.textContent = String(active);
+          elements.statCompleted.textContent = String(completed);
+        }
+
+        function renderTaskList() {
+          const tasks = getFilteredTasks();
+          elements.taskList.innerHTML = "";
+
+          if (!tasks.length) {
+            const emptyState = document.createElement("li");
+            emptyState.className = "empty-state";
+            emptyState.innerHTML =
+              state.tasks.length === 0
+                ? "Список пуст. Добавь первую задачу и выбери её как фокус."
+                : `По фильтру «${FILTER_LABELS[state.filter]}» задач не найдено.`;
+            elements.taskList.appendChild(emptyState);
+            return;
+          }
+
+          tasks.forEach((task) => {
+            const item = document.createElement("li");
+            item.className = "task-item";
+            item.classList.toggle("is-selected", task.id === state.selectedTaskId);
+            item.classList.toggle("is-completed", task.completed);
+
+            // Чекбокс завершения задачи
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.className = "task-checkbox";
+            checkbox.checked = task.completed;
+            checkbox.setAttribute("aria-label", `Отметить задачу «${task.title}» выполненной`);
+            checkbox.addEventListener("change", () => toggleTaskCompletion(task.id));
+
+            // Контент задачи
+            const content = document.createElement("div");
+            content.className = "task-content";
+
+            if (editingTaskId === task.id) {
+              const editWrap = document.createElement("div");
+              editWrap.className = "task-edit-wrap";
+
+              const editInput = document.createElement("input");
+              editInput.type = "text";
+              editInput.className = "input";
+              editInput.value = task.title;
+              editInput.maxLength = 140;
+              editInput.setAttribute("data-edit-input-id", task.id);
+
+              editInput.addEventListener("keydown", (event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  saveEditedTask(task.id, editInput.value);
+                }
+
+                if (event.key === "Escape") {
+                  event.preventDefault();
+                  cancelEditTask();
+                }
+              });
+
+              const editActions = document.createElement("div");
+              editActions.className = "task-edit-actions";
+
+              const saveButton = document.createElement("button");
+              saveButton.type = "button";
+              saveButton.className = "btn btn-sm btn-success";
+              saveButton.textContent = "Сохранить";
+              saveButton.addEventListener("click", () => saveEditedTask(task.id, editInput.value));
+
+              const cancelButton = document.createElement("button");
+              cancelButton.type = "button";
+              cancelButton.className = "btn btn-sm btn-ghost";
+              cancelButton.textContent = "Отмена";
+              cancelButton.addEventListener("click", cancelEditTask);
+
+              editActions.append(saveButton, cancelButton);
+              editWrap.append(editInput, editActions);
+              content.appendChild(editWrap);
+            } else {
+              const titleButton = document.createElement("button");
+              titleButton.type = "button";
+              titleButton.className = "task-title-button";
+              titleButton.addEventListener("click", () => selectTask(task.id));
+
+              const title = document.createElement("div");
+              title.className = "task-title";
+              title.textContent = task.title;
+
+              const meta = document.createElement("div");
+              meta.className = "task-meta";
+
+              const statusPill = document.createElement("span");
+              statusPill.className = "task-pill";
+              statusPill.textContent = task.completed ? "Выполнена" : "Активна";
+
+              const pomodoroPill = document.createElement("span");
+              pomodoroPill.className = "task-pill";
+              pomodoroPill.textContent = `🍅 ${task.pomodorosCompleted}`;
+
+              meta.append(statusPill, pomodoroPill);
+
+              if (task.id === state.selectedTaskId) {
+                const focusPill = document.createElement("span");
+                focusPill.className = "task-pill focus";
+                focusPill.textContent = "Фокус";
+                meta.appendChild(focusPill);
+              }
+
+              titleButton.append(title, meta);
+              content.appendChild(titleButton);
+            }
+
+            // Кнопки управления задачей
+            const actions = document.createElement("div");
+            actions.className = "task-actions";
+
+            const focusButton = document.createElement("button");
+            focusButton.type = "button";
+            focusButton.className = "btn btn-sm btn-ghost";
+            focusButton.textContent = task.id === state.selectedTaskId ? "Снять фокус" : "Выбрать";
+            focusButton.addEventListener("click", () => selectTask(task.id));
+
+            const editButton = document.createElement("button");
+            editButton.type = "button";
+            editButton.className = "btn btn-sm btn-ghost";
+            editButton.textContent = "Редактировать";
+            editButton.addEventListener("click", () => beginEditTask(task.id));
+
+            const deleteButton = document.createElement("button");
+            deleteButton.type = "button";
+            deleteButton.className = "btn btn-sm btn-danger";
+            deleteButton.textContent = "Удалить";
+            deleteButton.addEventListener("click", () => deleteTask(task.id));
+
+            actions.append(focusButton, editButton, deleteButton);
+
+            item.append(checkbox, content, actions);
+            elements.taskList.appendChild(item);
+          });
+        }
+
+        function renderTimer() {
+          const selectedTask = getSelectedTask();
+          const modeLabel = MODE_LABELS[state.timer.mode];
+          const modeDuration = getModeDurationInSeconds(state.timer.mode);
+          const progress = modeDuration > 0 ? ((modeDuration - state.timer.remaining) / modeDuration) * 100 : 0;
+          const currentProgress = Math.max(0, Math.min(100, progress));
+
+          elements.modeButtons.forEach((button) => {
+            const isActive = button.dataset.mode === state.timer.mode;
+            button.classList.toggle("is-active", isActive);
+            button.setAttribute("aria-selected", String(isActive));
+          });
+
+          elements.timerRing.dataset.mode = state.timer.mode;
+          elements.timerRing.style.setProperty("--progress", currentProgress.toFixed(2));
+
+          elements.timerModeLabel.textContent = `Режим: ${modeLabel}`;
+          elements.timerDisplay.textContent = formatTime(state.timer.remaining);
+          elements.timerStatus.textContent = getTimerStatusText();
+
+          elements.startButton.disabled = state.timer.isRunning;
+          elements.pauseButton.disabled = !state.timer.isRunning;
+          elements.resetButton.disabled = false;
+
+          elements.headerSelectedTask.textContent = selectedTask ? selectedTask.title : "не выбрана";
+          elements.focusTaskName.textContent = selectedTask ? selectedTask.title : "Не выбрана";
+          elements.focusTaskMeta.textContent = selectedTask
+            ? `У этой задачи уже завершено помидоров: ${selectedTask.pomodorosCompleted}.`
+            : "Таймер можно использовать и без привязки, но лучше выбрать задачу для учёта помидоров.";
+
+          elements.pomodoroTotal.textContent = String(state.pomodoroCount);
+          elements.pomodoroSelectedTask.textContent = String(selectedTask ? selectedTask.pomodorosCompleted : 0);
+
+          const remainderBeforeLongBreak =
+            state.settings.longBreakInterval -
+            (state.timer.cycleWorkSessionsCompleted % state.settings.longBreakInterval || 0);
+
+          elements.longBreakCounter.textContent =
+            remainderBeforeLongBreak === state.settings.longBreakInterval
+              ? `через ${state.settings.longBreakInterval}`
+              : `через ${remainderBeforeLongBreak}`;
+
+          elements.timerNote.textContent = selectedTask
+            ? `Текущий фокус: «${selectedTask.title}». Завершённый рабочий таймер добавит 1 помидор этой задаче.`
+            : "Задача не выбрана. Завершённый рабочий таймер будет учтён только в общем счётчике.";
+
+          updateDocumentTitle();
+        }
+
+        function getTimerStatusText() {
+          if (state.timer.isRunning) {
+            if (state.timer.mode === "work") {
+              return "Идёт рабочая сессия. Сконцентрируйся на текущей задаче.";
+            }
+
+            if (state.timer.mode === "shortBreak") {
+              return "Идёт короткий перерыв. Переключись и выдохни.";
+            }
+
+            return "Идёт длинный перерыв. Полноценное восстановление.";
+          }
+
+          const defaultDuration = getModeDurationInSeconds(state.timer.mode);
+          const pausedMidway = state.timer.remaining > 0 && state.timer.remaining < defaultDuration;
+
+          if (pausedMidway) {
+            return "Таймер остановлен на паузе. Можно продолжить или сбросить.";
+          }
+
+          return "Таймер готов к запуску.";
+        }
+      })();
+    </script>
+  </body>
+</html>

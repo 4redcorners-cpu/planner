@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Таймер Помодоро</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header">
+        <div class="app-title-wrap">
+          <div class="eyebrow">⏱️ Помодоро • Локально в браузере • localStorage</div>
+          <h1 class="app-title">Таймер Помодоро</h1>
+          <p class="app-subtitle">Работа, короткий перерыв, длинный перерыв — всё в одном блоке.</p>
+        </div>
+
+        <div class="header-badge">
+          Привязка к задаче: <strong id="header-selected-task">не выбрана</strong>
+        </div>
+      </header>
+
+      <nav class="app-menu" aria-label="Меню">
+        <a class="btn btn-ghost" href="./tasks.html">Задача</a>
+        <a class="btn btn-primary" href="./pomodoro.html" aria-current="page">Таймер Помодоро</a>
+      </nav>
+
+      <main class="app-grid app-grid--single">
+        <section class="card timer-card" aria-labelledby="timer-title">
+          <div class="card-inner">
+            <div class="section-head">
+              <div>
+                <h2 id="timer-title">Таймер</h2>
+                <p>Счётчик помидоров идёт в общий localStorage и добавляется выбранной задаче.</p>
+              </div>
+            </div>
+
+            <div class="mode-tabs" role="tablist" aria-label="Режимы таймера">
+              <button class="btn btn-sm mode-btn" type="button" data-mode="work">Работа</button>
+              <button class="btn btn-sm mode-btn" type="button" data-mode="shortBreak">Короткий перерыв</button>
+              <button class="btn btn-sm mode-btn" type="button" data-mode="longBreak">Длинный перерыв</button>
+            </div>
+
+            <div class="timer-center">
+              <div id="timer-ring" class="timer-ring" data-mode="work" style="--progress: 0">
+                <div class="timer-core">
+                  <div class="timer-mode-label" id="timer-mode-label">Режим: Работа</div>
+                  <div class="timer-display" id="timer-display">25:00</div>
+                  <div class="timer-status" id="timer-status">Таймер готов к запуску.</div>
+                </div>
+              </div>
+
+              <div class="focus-box">
+                <div class="focus-title">Текущая задача для фокуса</div>
+                <div class="focus-task-name" id="focus-task-name">Не выбрана</div>
+                <div class="focus-meta" id="focus-task-meta">
+                  Таймер можно использовать и без привязки, но лучше выбрать задачу для учёта помидоров.
+                </div>
+              </div>
+            </div>
+
+            <div class="timer-controls">
+              <button id="start-btn" class="btn btn-primary" type="button">Старт</button>
+              <button id="pause-btn" class="btn btn-ghost" type="button">Пауза</button>
+              <button id="reset-btn" class="btn btn-ghost" type="button">Сброс</button>
+            </div>
+
+            <div class="stats-grid timer-stats">
+              <article class="stat-card">
+                <div class="stat-label">Завершено помидоров</div>
+                <div class="stat-value" id="pomodoro-total">0</div>
+              </article>
+
+              <article class="stat-card">
+                <div class="stat-label">У выбранной задачи</div>
+                <div class="stat-value" id="pomodoro-selected-task">0</div>
+              </article>
+
+              <article class="stat-card">
+                <div class="stat-label">Следующий длинный перерыв</div>
+                <div class="stat-value" id="long-break-counter">через 4</div>
+              </article>
+            </div>
+
+            <p class="timer-note" id="timer-note">
+              После завершения таймера приложение покажет визуальный сигнал и подаст звуковой сигнал.
+            </p>
+
+            <div class="settings-wrap">
+              <h3 class="settings-title">Настройки таймера</h3>
+
+              <form id="settings-form" class="settings-form" autocomplete="off">
+                <div class="settings-grid">
+                  <div class="field">
+                    <label for="work-duration">Работа (мин)</label>
+                    <input id="work-duration" class="number-input" type="number" min="1" max="180" step="1" />
+                  </div>
+
+                  <div class="field">
+                    <label for="short-break-duration">Короткий перерыв (мин)</label>
+                    <input
+                      id="short-break-duration"
+                      class="number-input"
+                      type="number"
+                      min="1"
+                      max="60"
+                      step="1"
+                    />
+                  </div>
+
+                  <div class="field">
+                    <label for="long-break-duration">Длинный перерыв (мин)</label>
+                    <input
+                      id="long-break-duration"
+                      class="number-input"
+                      type="number"
+                      min="1"
+                      max="120"
+                      step="1"
+                    />
+                  </div>
+
+                  <div class="field">
+                    <label for="long-break-interval">Длинный перерыв каждые N помидоров</label>
+                    <input
+                      id="long-break-interval"
+                      class="number-input"
+                      type="number"
+                      min="1"
+                      max="12"
+                      step="1"
+                    />
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Сохранить настройки</button>
+              </form>
+
+              <p class="settings-hint">
+                Новые значения сохраняются в браузере. Если таймер сейчас не запущен и стоит на начальном значении,
+                длительность режима обновится сразу. Если таймер был поставлен на паузу в середине сессии — оставшееся
+                время сохранится, пока ты не нажмёшь «Сброс».
+              </p>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="app-footer">
+        Совет: выбери задачу на странице «Задачи» — и запускай «Работу», чтобы помидоры привязывались к ней.
+      </footer>
+    </div>
+
+    <button
+      id="theme-toggle"
+      class="theme-toggle"
+      type="button"
+      aria-label="Переключить тему"
+      aria-pressed="false"
+      title="Переключить тему"
+    >
+      <span id="theme-toggle-icon" class="theme-toggle-icon" aria-hidden="true">🌙</span>
+    </button>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="./pomodoro.js"></script>
+  </body>
+</html>
+

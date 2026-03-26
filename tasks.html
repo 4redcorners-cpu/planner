@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Задачи</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header">
+        <div class="app-title-wrap">
+          <div class="eyebrow">⏱️ Локально работает в браузере • Данные сохраняются автоматически</div>
+          <h1 class="app-title">Список дел</h1>
+          <p class="app-subtitle">Добавляй, редактируй, завершай и выбирай текущий фокус.</p>
+        </div>
+
+        <div class="header-badge">
+          Привязка к задаче: <strong id="header-selected-task">не выбрана</strong>
+        </div>
+      </header>
+
+      <nav class="app-menu" aria-label="Меню">
+        <a class="btn btn-primary" href="./tasks.html" aria-current="page">Задача</a>
+        <a class="btn btn-ghost" href="./pomodoro.html">Таймер Помодоро</a>
+      </nav>
+
+      <main class="app-grid app-grid--single">
+        <section class="card" aria-labelledby="tasks-title">
+          <div class="card-inner">
+            <div class="section-head">
+              <div>
+                <h2 id="tasks-title">Задачи</h2>
+                <p>Фильтры, статистика и выбор фокуса для Помодоро.</p>
+              </div>
+            </div>
+
+            <form id="task-form" class="task-form" autocomplete="off">
+              <input
+                id="task-input"
+                class="input"
+                type="text"
+                maxlength="140"
+                placeholder="Например: Доделать лендинг, написать 3 письма, разобрать макет"
+                aria-label="Новая задача"
+              />
+              <button type="submit" class="btn btn-primary">Добавить задачу</button>
+            </form>
+
+            <div class="filters" role="tablist" aria-label="Фильтр списка задач">
+              <button class="btn btn-sm filter-btn" type="button" data-filter="all">Все</button>
+              <button class="btn btn-sm filter-btn" type="button" data-filter="active">Активные</button>
+              <button class="btn btn-sm filter-btn" type="button" data-filter="completed">Выполненные</button>
+            </div>
+
+            <div class="stats-grid" aria-label="Статистика задач">
+              <article class="stat-card">
+                <div class="stat-label">Всего задач</div>
+                <div class="stat-value" id="stat-total">0</div>
+              </article>
+
+              <article class="stat-card">
+                <div class="stat-label">Активных</div>
+                <div class="stat-value" id="stat-active">0</div>
+              </article>
+
+              <article class="stat-card">
+                <div class="stat-label">Выполненных</div>
+                <div class="stat-value" id="stat-completed">0</div>
+              </article>
+            </div>
+
+            <ul id="task-list" class="task-list" aria-live="polite"></ul>
+          </div>
+        </section>
+      </main>
+
+      <footer class="app-footer">Совет: выбери задачу и переключись на «Таймер Помодоро».</footer>
+    </div>
+
+    <button
+      id="theme-toggle"
+      class="theme-toggle"
+      type="button"
+      aria-label="Переключить тему"
+      aria-pressed="false"
+      title="Переключить тему"
+    >
+      <span id="theme-toggle-icon" class="theme-toggle-icon" aria-hidden="true">🌙</span>
+    </button>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="./tasks.js"></script>
+  </body>
+</html>
+
