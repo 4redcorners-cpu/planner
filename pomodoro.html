@@ -23,6 +23,17 @@
       <nav class="app-menu" aria-label="Меню">
         <a class="btn btn-ghost" href="./tasks.html">Задача</a>
         <a class="btn btn-primary" href="./pomodoro.html" aria-current="page">Таймер Помодоро</a>
+        <button
+          id="theme-toggle"
+          class="btn btn-ghost"
+          type="button"
+          aria-label="Переключить тему"
+          aria-pressed="false"
+          title="Переключить тему"
+        >
+          <span id="theme-toggle-icon" aria-hidden="true">🌙</span>
+          Тема
+        </button>
       </nav>
 
       <main class="app-grid app-grid--single">
@@ -151,20 +162,8 @@
       </footer>
     </div>
 
-    <button
-      id="theme-toggle"
-      class="theme-toggle"
-      type="button"
-      aria-label="Переключить тему"
-      aria-pressed="false"
-      title="Переключить тему"
-    >
-      <span id="theme-toggle-icon" class="theme-toggle-icon" aria-hidden="true">🌙</span>
-    </button>
-
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <script src="./pomodoro.js"></script>
   </body>
 </html>
-
